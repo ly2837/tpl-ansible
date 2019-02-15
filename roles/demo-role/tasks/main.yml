@@ -1,0 +1,59 @@
+## make dir
+- name: make dir
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - /opt/keys/
+    - /opt/k8s-node/
+    - /opt/k8s-node/logs/
+    - /opt/k8s-node/data/
+## keys
+- name: copy ca key
+  copy:
+    src: keys/{{ item }}
+    dest: /opt/keys/
+  with_items:
+    - ca.crt
+    - ca.key
+
+# make node keys
+- name: make node keys
+  script: k8s_node_keys.sh {{ ansible_host }}
+
+# - name: unarchive kubernetes-node-linux-amd64.tar.gz
+#   unarchive:
+#     src: http://192.168.1.9/pi/images/k8s/v1.13.2/kubernetes-node-linux-amd64.tar.gz
+#     dest: /opt/k8s-node/
+#     remote_src: yes
+
+## copy *.conf
+- name: copy *.conf
+  template:
+    src: "{{ item }}"
+    dest: /opt/k8s-node/
+  with_items:
+    - kubelet-kubeconfig.yml
+    - kubelet-env.conf
+    - kube-proxy-env.conf
+    - kube-proxy-kubeconfig.yml
+
+## copy *.service
+- name: copy *.service
+  template:
+    src: "{{ item }}"
+    dest: /usr/lib/systemd/system/
+  with_items:
+    - kubelet.service
+    - kube-proxy.service
+
+## restart *.service
+- name: restart *.service
+  systemd:
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
+    name: "{{ item }}"
+  with_items:
+    - kubelet
+    - kube-proxy

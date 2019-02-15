@@ -1,0 +1,14 @@
+[Unit]
+Description=K8s Kubelet Server
+After=docker.service
+Requires=docker.service
+
+[Service]
+WorkingDirectory=/opt/k8s-node/data/
+EnvironmentFile=/opt/k8s-node/kubelet-env.conf
+ExecStart=/opt/k8s-node/kubernetes/node/bin/kubelet $KUBELET_ARGS
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+

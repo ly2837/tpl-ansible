@@ -1,0 +1,12 @@
+# ---
+- hosts: server
+  become: yes
+  roles:
+    - demo-role
+- hosts: nodes
+  become: yes
+  roles:
+    # - docker
+    # - k8s_node
+  tasks:
+    - debug: var=ansible_host
